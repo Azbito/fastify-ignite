@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 
 export async function transactionsRouter(app: FastifyInstance) {
   // eslint-disable-next-line
@@ -32,6 +33,19 @@ export async function transactionsRouter(app: FastifyInstance) {
   })
 
   app.post('/', async (request, reply) => {
+    // eslint-disable-next-line
+    let sessionId = request.cookies.sessionId
+
+    if (!sessionId) {
+      sessionId = randomUUID()
+      const TIME = 60 * 60 * 24 * 7 // 7 DAYS
+
+      reply.cookie('sessionId', sessionId, {
+        path: '/',
+        maxAge: TIME,
+      })
+    }
+
     const createTransactionBodySchema = z.object({
       title: z.string(),
       amount: z.number(),
@@ -46,6 +60,7 @@ export async function transactionsRouter(app: FastifyInstance) {
       id: crypto.randomUUID(),
       title,
       amount: type === 'credit' ? amount : amount * -1,
+      session_id: sessionId,
     })
 
     return reply.status(201).send()
