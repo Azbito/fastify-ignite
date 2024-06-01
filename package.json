@@ -12,6 +12,7 @@
     "base64-js": "^1.5.1",
     "buffer": "^6.0.3",
     "cookie": "^0.6.0",
+    "dotenv": "^16.4.5",
     "event-target-shim": "^5.0.1",
     "events": "^3.3.0",
     "fast-content-type-parse": "^1.1.0",
@@ -62,17 +63,19 @@
     "tsx": "^4.11.0",
     "typescript": "^5.4.5",
     "undici-types": "^5.26.5",
-    "uri-js": "^4.4.1"
+    "uri-js": "^4.4.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@rocketseat/eslint-config": "^2.2.2",
     "@types/node": "^20.13.0",
+    "crypto": "^1.0.1",
     "eslint": "^8.57.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
-    "knex:create": "node ./node_modules/knex/bin/cli.js migrate:make $npm_config_name",
+    "knex:create": "node ./node_modules/knex/bin/cli.js migrate:make",
     "knex:batch": "node ./node_modules/knex/bin/cli.js migrate:latest",
     "start": "npx tsx ./src/server.ts",
     "lint": "eslint . --ext .ts,.js --fix"
