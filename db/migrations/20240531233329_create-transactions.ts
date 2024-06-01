@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     table.uuid('id').primary() // primary key
     table.text('title').notNullable()
     table.decimal('amount', 10, 2).notNullable()
+    table.timestamp('createdAt').defaultTo(knex.fn.now()).notNullable()
   })
 }
 
