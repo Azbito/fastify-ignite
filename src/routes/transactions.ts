@@ -2,35 +2,68 @@ import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { checkSessionExists } from '../middlewares/check-session-id-exist'
 
 export async function transactionsRouter(app: FastifyInstance) {
   // eslint-disable-next-line
-  app.get('/', async (request, reply) => {
-    const transactions = await knex('transactions').select()
+  app.get(
+    '/',
+    {
+      preHandler: [checkSessionExists],
+    },
+    // eslint-disable-next-line
+    async (request, reply) => {
+      const { sessionId } = request.cookies
 
-    return {
-      transactions,
-    }
-  })
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select()
 
-  app.get('/summary', async () => {
-    const summary = await knex('transactions')
-      .sum('amount', { as: 'amount' })
-      .first()
+      return {
+        transactions,
+      }
+    },
+  )
 
-    return { summary }
-  })
+  app.get(
+    '/summary',
+    {
+      preHandler: [checkSessionExists],
+    },
+    async (request) => {
+      const { sessionId } = request.cookies
 
-  app.get('/:id', async (request) => {
-    const getTransactionParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+      const summary = await knex('transactions')
+        .where('session_id', sessionId)
+        .sum('amount', { as: 'amount' })
+        .first()
 
-    const { id } = getTransactionParamsSchema.parse(request.params)
+      return { summary }
+    },
+  )
 
-    const transaction = await knex('transactions').where('id', id).first()
-    return transaction
-  })
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkSessionExists],
+    },
+    async (request) => {
+      const getTransactionParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+
+      const { sessionId } = request.cookies
+      const { id } = getTransactionParamsSchema.parse(request.params)
+
+      const transaction = await knex('transactions')
+        .where({
+          session_id: sessionId,
+          id,
+        })
+        .first()
+      return transaction
+    },
+  )
 
   app.post('/', async (request, reply) => {
     // eslint-disable-next-line
